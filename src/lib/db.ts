@@ -5,6 +5,10 @@ declare global {
   var _mysqlPool: mysql.Pool | undefined;
 }
 
+const isRemote =
+  process.env.DB_SSL === 'true' ||
+  (process.env.DB_HOST && process.env.DB_HOST !== '127.0.0.1' && process.env.DB_HOST !== 'localhost');
+
 const pool =
   global._mysqlPool ||
   mysql.createPool({
@@ -18,6 +22,7 @@ const pool =
     queueLimit: 0,
     charset: 'utf8mb4',
     dateStrings: true, // Return dates as YYYY-MM-DD strings instead of Date objects to avoid timezone shifts
+    ssl: isRemote ? { rejectUnauthorized: false } : undefined,
   });
 
 if (process.env.NODE_ENV !== 'production') {
